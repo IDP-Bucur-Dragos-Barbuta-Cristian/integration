@@ -23,6 +23,7 @@ services:
       REDIS_NAME: ${RD_Q_NAME}
       REDIS_DB: ${RD_DB}
     networks:
+      - metrics
       - redis
     depends_on:
       redis:
@@ -42,6 +43,7 @@ services:
       postgres:
         condition: service_healthy
     networks:
+      - metrics
       - db
 
   postgres:
@@ -82,10 +84,52 @@ services:
       postgres:
         condition: service_healthy
 
+  prometheus:
+    deploy:
+      replicas: 1
+      placement:
+        constraints: [node.role == manager]
+    image: prom/prometheus:latest
+    container_name: prometheus
+    volumes:
+      - prom_data:/prometheus
+      - ./prometheus/:/etc/prometheus
+    ports:
+      - "9090:9090"
+    networks:
+      - metrics
+    depends_on:
+      - test-publisher
+      - test-service
+
+  grafana:
+    deploy:
+      replicas: 1
+      placement:
+        constraints: [node.role == manager]
+    image: grafana/grafana:latest
+    container_name: grafana
+    depends_on:
+      - prometheus
+    ports:
+      - '3000:3000'
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_USER}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASS}
+    volumes:
+      - ./grafana:/etc/grafana/provisioning/datasources
+      - grafana_data:/var/lib/grafana
+    networks:
+      - metrics
+
 networks:
   db:
   redis:
+  metrics:
 
 volumes:
   db_data:
   redis_data:
+  prom_data:
+  grafana_data:
