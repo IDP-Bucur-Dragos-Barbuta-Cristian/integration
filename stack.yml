@@ -22,7 +22,7 @@ services:
       KONG_DECLARATIVE_CONFIG: /opt/kong/kong.yml
     command: "kong start"
     volumes:
-      - ./kong-config:/opt/kong
+      - ${CONFIG_ROOT}/kong-config:/opt/kong
 
   redis:
     image: redis:latest
@@ -116,7 +116,7 @@ services:
     container_name: prometheus
     volumes:
       - prom_data:/prometheus
-      - ./prometheus/:/etc/prometheus
+      - ${CONFIG_ROOT}/prometheus/:/etc/prometheus
     ports:
       - "9090:9090"
     networks:
@@ -141,7 +141,7 @@ services:
       GF_SECURITY_ADMIN_USER: ${GRAFANA_USER}
       GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASS}
     volumes:
-      - ./grafana:/etc/grafana/provisioning/datasources
+      - ${CONFIG_ROOT}/grafana:/etc/grafana/provisioning/datasources
       - grafana_data:/var/lib/grafana
     networks:
       - metrics
