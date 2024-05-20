@@ -27,6 +27,10 @@ services:
   redis:
     image: redis:latest
     container_name: redis_server
+    deploy:
+      replicas: 1
+      placement:
+        constraints: [node.role == manager]
     ports:
       - "6379:6379"
     networks:
@@ -40,7 +44,7 @@ services:
       - redis_data:/data
 
   test-publisher:
-    deployment:
+    deploy:
       replicas: 3
     hostname: test-publisher
     image: dragosbucur1105/nn_worker:latest
@@ -56,6 +60,8 @@ services:
       - redis
 
   test-service:
+    deploy:
+      replicas: 3
     hostname: test-service
     image: dragosbucur1105/testing-docker-hub:latest
     environment:
@@ -93,10 +99,6 @@ services:
       - db_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
-    deploy:
-      replicas: 1
-      placement:
-        constraints: [node.role == manager]
     networks:
       - db
 
