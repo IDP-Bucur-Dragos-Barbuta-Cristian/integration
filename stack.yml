@@ -40,6 +40,8 @@ services:
       - redis_data:/data
 
   test-publisher:
+    deployment:
+      replicas: 3
     hostname: test-publisher
     image: dragosbucur1105/nn_worker:latest
     environment:
@@ -72,6 +74,10 @@ services:
 
   postgres:
     image: postgres:latest
+    deploy:
+      replicas: 1
+      placement:
+        constraints: [node.role == manager]
     hostname: postgres
     restart: always
     environment:
@@ -96,6 +102,10 @@ services:
 
   pgadmin:
     image: dpage/pgadmin4
+    deploy:
+      replicas: 1
+      placement:
+        constraints: [node.role == manager]
     restart: always
     environment:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL}
