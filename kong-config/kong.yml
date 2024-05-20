@@ -1,0 +1,14 @@
+_format_version: "2.1"
+_transform: true
+
+services:
+  - name: test-service
+    url: http://test-service:5000
+    routes:
+      - name: test-service-routes
+        paths:
+          - /test-service
+        strip_path: true
+
+plugins:
+  - name: prometheus

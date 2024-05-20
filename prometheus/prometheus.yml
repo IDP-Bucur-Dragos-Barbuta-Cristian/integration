@@ -22,6 +22,9 @@ scrape_configs:
   static_configs:
   - targets:
     - test-service:5000
+- job_name: 'kong'
+  static_configs:
+    - targets: ['kong:8001']
 
 # - job_name: auth
 #   honor_timestamps: true
