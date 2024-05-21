@@ -1,4 +1,4 @@
-version: "3.8"
+# version: "3.8"
 
 services:
   kong:
@@ -47,10 +47,14 @@ services:
       replicas: 3
     image: dragosbucur1105/nn_worker:latest
     environment:
+      NN_MODELS_BUCKET: ${NN_MODELS_BUCKET}
+      NN_DATASETS_BUCKET: ${NN_DATASETS_BUCKET}
       REDIS_HOST: ${RD_HOST}
       REDIS_PORT: ${RD_PORT}
       REDIS_NAME: ${RD_Q_NAME}
       REDIS_DB: ${RD_DB}
+      CALLBACK_CREATE_URL: http://web_server:${WEB_SERVER_PORT}/callback_create_model
+      CALLBACK_TRAIN_URL: http://web_server:${WEB_SERVER_PORT}/callback_train_model
     networks:
       - metrics
       - redis
@@ -78,14 +82,18 @@ services:
     environment:
       JWT_SECRET_KEY: ${JWT_SECRET}
       DATABASE_URI: postgresql://${DB_USER}:${DB_USER}@postgres:5432/${DB_NAME}
-      NN_MODELS_BUCKET: nn_models
-      NN_DATASETS_BUCKET: nn_datasets
+      NN_MODELS_BUCKET: ${NN_MODELS_BUCKET}
+      NN_DATASETS_BUCKET: ${NN_DATASETS_BUCKET}
       API_KEY_FOR_LOADING_MODELS_SERVICE: ${API_KEY}
       LOADING_MODELS_SERVICE_URL: http://nn_runner:${RUNNER_PORT}
-  network:
-    - runner
-    - kong
-    - db
+      PORT: ${WEB_SERVER_PORT}
+    depends_on:
+      - nn_worker
+      - nn_runner
+    networks:
+      - runner
+      - kong
+      - db
 
 
 
@@ -164,8 +172,9 @@ services:
     networks:
       - metrics
     depends_on:
-      - test-publisher
-      - test-service
+      - nn_worker
+      - nn_runner
+      - web_server
 
   grafana:
     deploy:
