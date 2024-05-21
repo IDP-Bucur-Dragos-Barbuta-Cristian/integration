@@ -67,7 +67,26 @@ services:
       RUNNER_PORT: ${RUNNER_PORT}
     networks:
       - runner
+      - kong
       - metrics
+
+  web_server:
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+    image: dragosbucur1105/web_server:latest
+    environment:
+      JWT_SECRET_KEY: ${JWT_SECRET}
+      DATABASE_URI: postgresql://${DB_USER}:${DB_USER}@postgres:5432/${DB_NAME}
+      NN_MODELS_BUCKET: nn_models
+      NN_DATASETS_BUCKET: nn_datasets
+      API_KEY_FOR_LOADING_MODELS_SERVICE: ${API_KEY}
+      LOADING_MODELS_SERVICE_URL: http://nn_runner:${RUNNER_PORT}
+  network:
+    - runner
+    - kong
+    - db
+
 
 
   # test-service:
