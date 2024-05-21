@@ -26,7 +26,6 @@ services:
 
   redis:
     image: redis:latest
-    container_name: redis_server
     deploy:
       replicas: 1
       placement:
@@ -43,10 +42,9 @@ services:
     volumes:
       - redis_data:/data
 
-  test-publisher:
+  nn_worker:
     deploy:
       replicas: 3
-    hostname: test-publisher
     image: dragosbucur1105/nn_worker:latest
     environment:
       REDIS_HOST: ${RD_HOST}
@@ -59,24 +57,37 @@ services:
     depends_on:
       - redis
 
-  test-service:
+  nn_runner:
     deploy:
-      replicas: 3
-    hostname: test-service
-    image: dragosbucur1105/testing-docker-hub:latest
+      placement:
+        constraints: [node.role == worker]
+    image: dragosbucur1105/nn_runner:latest
     environment:
-      DB_HOST: ${DB_HOST}
-      DB_USER: ${DB_USER}
-      DB_PASSWORD: ${DB_PASSWORD}
-      DB_NAME: ${DB_NAME}
-    ports:
-      - "5000:5000"
-    depends_on:
-      - postgres
+      API_KEY: ${API_KEY}
+      RUNNER_PORT: ${RUNNER_PORT}
     networks:
+      - runner
       - metrics
-      - kong
-      - db
+
+
+  # test-service:
+  #   deploy:
+  #     replicas: 3
+  #   hostname: test-service
+  #   image: dragosbucur1105/testing-docker-hub:latest
+  #   environment:
+  #     DB_HOST: ${DB_HOST}
+  #     DB_USER: ${DB_USER}
+  #     DB_PASSWORD: ${DB_PASSWORD}
+  #     DB_NAME: ${DB_NAME}
+  #   ports:
+  #     - "5000:5000"
+  #   depends_on:
+  #     - postgres
+  #   networks:
+  #     - metrics
+  #     - kong
+  #     - db
 
   postgres:
     image: postgres:latest
@@ -163,6 +174,7 @@ networks:
   redis:
   metrics:
   kong:
+  runner:
 
 volumes:
   db_data:
