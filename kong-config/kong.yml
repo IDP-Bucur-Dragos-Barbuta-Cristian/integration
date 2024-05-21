@@ -2,13 +2,27 @@ _format_version: "2.1"
 _transform: true
 
 services:
-  - name: test-service
-    url: http://test-service:5000
+  - name: web_service
+    url: http://localhost:5000
     routes:
-      - name: test-service-routes
+      - name: web_service_routes
         paths:
-          - /test-service
+          - /web_service
         strip_path: true
+  - name: nn_runner
+    url: http://localhost:5002
+    routes:
+      - name: nn_runner_routes
+        paths:
+          - /nn_runner
+        strip_path: true
+  # - name: test-service
+  #   url: http://test-service:5000
+  #   routes:
+  #     - name: test-service-routes
+  #       paths:
+  #         - /test-service
+  #       strip_path: true
 
 plugins:
   - name: prometheus
