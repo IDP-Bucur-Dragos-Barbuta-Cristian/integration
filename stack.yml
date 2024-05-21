@@ -51,11 +51,12 @@ services:
       NN_DATASETS_BUCKET: ${NN_DATASETS_BUCKET}
       REDIS_HOST: ${RD_HOST}
       REDIS_PORT: ${RD_PORT}
-      REDIS_NAME: ${RD_Q_NAME}
+      QUEUE_NAME: ${RD_Q_NAME}
       REDIS_DB: ${RD_DB}
       CALLBACK_CREATE_URL: http://web_server:${WEB_SERVER_PORT}/callback_create_model
       CALLBACK_TRAIN_URL: http://web_server:${WEB_SERVER_PORT}/callback_train_model
     networks:
+      - worker
       - metrics
       - redis
     depends_on:
@@ -66,6 +67,8 @@ services:
       placement:
         constraints: [node.role == worker]
     image: dragosbucur1105/nn_runner:latest
+    ports:
+      - ${RUNNER_PORT}:${RUNNER_PORT}
     environment:
       API_KEY: ${API_KEY}
       RUNNER_PORT: ${RUNNER_PORT}
@@ -86,12 +89,19 @@ services:
       NN_DATASETS_BUCKET: ${NN_DATASETS_BUCKET}
       API_KEY_FOR_LOADING_MODELS_SERVICE: ${API_KEY}
       LOADING_MODELS_SERVICE_URL: http://nn_runner:${RUNNER_PORT}
+      RD_HOST: ${RD_HOST}
+      RD_PORT: ${RD_PORT}
+      RD_Q_NAME: ${RD_Q_NAME}
       PORT: ${WEB_SERVER_PORT}
+    ports:
+      - ${WEB_SERVER_PORT}:${WEB_SERVER_PORT}
     depends_on:
       - nn_worker
       - nn_runner
     networks:
+      - redis
       - runner
+      - worker
       - kong
       - db
 
@@ -203,9 +213,11 @@ networks:
   metrics:
   kong:
   runner:
+  worker:
 
 volumes:
   db_data:
   redis_data:
   prom_data:
   grafana_data:
+  web_server_data:
